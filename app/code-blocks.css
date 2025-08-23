@@ -1,0 +1,297 @@
+/* Code Block Styling with Theme Support */
+
+/* Light theme code blocks */
+.markdown-body pre {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f6f8fa !important;
+  padding: 16px !important;
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+
+/* Dark theme code blocks */
+.dark .markdown-body pre {
+  background: #161b22 !important;
+  border-color: #30363d;
+}
+
+/* Code block hover effect */
+.markdown-body pre:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .markdown-body pre:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Inline code styling */
+.markdown-body code:not(pre code) {
+  background: rgba(175, 184, 193, 0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 85%;
+  transition: background 0.3s ease;
+}
+
+.dark .markdown-body code:not(pre code) {
+  background: rgba(110, 118, 129, 0.4);
+}
+
+/* Copy button for code blocks */
+.markdown-body pre {
+  position: relative;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  z-index: 10;
+}
+
+.dark .code-copy-button {
+  background: rgba(22, 27, 34, 0.9);
+  color: var(--muted);
+}
+
+.markdown-body pre:hover .code-copy-button {
+  opacity: 1;
+}
+
+.code-copy-button:hover {
+  transform: scale(1.05);
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+.code-copy-button:active {
+  transform: scale(0.95);
+}
+
+.code-copy-button.copied {
+  color: #22c55e;
+  border-color: #22c55e;
+}
+
+.code-copy-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Light theme syntax highlighting (GitHub theme) */
+.markdown-body .hljs {
+  color: #24292e;
+  background: transparent;
+}
+
+.markdown-body .hljs-doctag,
+.markdown-body .hljs-keyword,
+.markdown-body .hljs-meta .hljs-keyword,
+.markdown-body .hljs-template-tag,
+.markdown-body .hljs-template-variable,
+.markdown-body .hljs-type,
+.markdown-body .hljs-variable.language_ {
+  color: #d73a49;
+}
+
+.markdown-body .hljs-title,
+.markdown-body .hljs-title.class_,
+.markdown-body .hljs-title.class_.inherited__,
+.markdown-body .hljs-title.function_ {
+  color: #6f42c1;
+}
+
+.markdown-body .hljs-attr,
+.markdown-body .hljs-attribute,
+.markdown-body .hljs-literal,
+.markdown-body .hljs-meta,
+.markdown-body .hljs-number,
+.markdown-body .hljs-operator,
+.markdown-body .hljs-selector-attr,
+.markdown-body .hljs-selector-class,
+.markdown-body .hljs-selector-id,
+.markdown-body .hljs-variable {
+  color: #005cc5;
+}
+
+.markdown-body .hljs-meta .hljs-string,
+.markdown-body .hljs-regexp,
+.markdown-body .hljs-string {
+  color: #032f62;
+}
+
+.markdown-body .hljs-built_in,
+.markdown-body .hljs-symbol {
+  color: #e36209;
+}
+
+.markdown-body .hljs-code,
+.markdown-body .hljs-comment,
+.markdown-body .hljs-formula {
+  color: #6a737d;
+}
+
+.markdown-body .hljs-name,
+.markdown-body .hljs-quote,
+.markdown-body .hljs-selector-pseudo,
+.markdown-body .hljs-selector-tag {
+  color: #22863a;
+}
+
+.markdown-body .hljs-subst {
+  color: #24292e;
+}
+
+.markdown-body .hljs-section {
+  color: #005cc5;
+  font-weight: 700;
+}
+
+.markdown-body .hljs-bullet {
+  color: #735c0f;
+}
+
+.markdown-body .hljs-emphasis {
+  color: #24292e;
+  font-style: italic;
+}
+
+.markdown-body .hljs-strong {
+  color: #24292e;
+  font-weight: 700;
+}
+
+.markdown-body .hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.markdown-body .hljs-deletion {
+  color: #b31d28;
+  background-color: #ffeef0;
+}
+
+/* Dark theme syntax highlighting (GitHub Dark theme) */
+.dark .markdown-body .hljs {
+  color: #c9d1d9;
+  background: transparent;
+}
+
+.dark .markdown-body .hljs-doctag,
+.dark .markdown-body .hljs-keyword,
+.dark .markdown-body .hljs-meta .hljs-keyword,
+.dark .markdown-body .hljs-template-tag,
+.dark .markdown-body .hljs-template-variable,
+.dark .markdown-body .hljs-type,
+.dark .markdown-body .hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+.dark .markdown-body .hljs-title,
+.dark .markdown-body .hljs-title.class_,
+.dark .markdown-body .hljs-title.class_.inherited__,
+.dark .markdown-body .hljs-title.function_ {
+  color: #d2a8ff;
+}
+
+.dark .markdown-body .hljs-attr,
+.dark .markdown-body .hljs-attribute,
+.dark .markdown-body .hljs-literal,
+.dark .markdown-body .hljs-meta,
+.dark .markdown-body .hljs-number,
+.dark .markdown-body .hljs-operator,
+.dark .markdown-body .hljs-selector-attr,
+.dark .markdown-body .hljs-selector-class,
+.dark .markdown-body .hljs-selector-id,
+.dark .markdown-body .hljs-variable {
+  color: #79c0ff;
+}
+
+.dark .markdown-body .hljs-meta .hljs-string,
+.dark .markdown-body .hljs-regexp,
+.dark .markdown-body .hljs-string {
+  color: #a5d6ff;
+}
+
+.dark .markdown-body .hljs-built_in,
+.dark .markdown-body .hljs-symbol {
+  color: #ffa657;
+}
+
+.dark .markdown-body .hljs-code,
+.dark .markdown-body .hljs-comment,
+.dark .markdown-body .hljs-formula {
+  color: #8b949e;
+}
+
+.dark .markdown-body .hljs-name,
+.dark .markdown-body .hljs-quote,
+.dark .markdown-body .hljs-selector-pseudo,
+.dark .markdown-body .hljs-selector-tag {
+  color: #7ee83f;
+}
+
+.dark .markdown-body .hljs-subst {
+  color: #c9d1d9;
+}
+
+.dark .markdown-body .hljs-section {
+  color: #1f6feb;
+  font-weight: 700;
+}
+
+.dark .markdown-body .hljs-bullet {
+  color: #f2cc60;
+}
+
+.dark .markdown-body .hljs-emphasis {
+  color: #c9d1d9;
+  font-style: italic;
+}
+
+.dark .markdown-body .hljs-strong {
+  color: #c9d1d9;
+  font-weight: 700;
+}
+
+.dark .markdown-body .hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+
+.dark .markdown-body .hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
+}
+
+/* Language label for code blocks */
+.markdown-body pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-right: none;
+  border-bottom-left-radius: 6px;
+  opacity: 0.7;
+}

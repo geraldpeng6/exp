@@ -1,0 +1,635 @@
+/* Tailwind CSS 基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import additional markdown styles */
+@import './markdown-styles.css';
+
+/* Smooth scrolling behavior for the entire document */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure smooth scrolling works with keyboard navigation */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* 全局极简风格样式（中文注释） */
+:root {
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #111111;
+  --link: #1f2937;
+  --toc-w: 280px; /* 固定目录宽度 */
+}
+
+/* 黑夜模式变量 */
+.dark {
+  --bg: #0f0f0f;
+  --fg: #f5f5f5;
+  --muted: #9ca3af;
+  --border: #374151;
+  --accent: #f5f5f5;
+  --link: #d1d5db;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--fg);
+  background: var(--bg);
+  line-height: 1.65;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+a {
+  color: var(--link);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.site-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* 移除背景，让中间部分透明 */
+  background: transparent;
+  z-index: 100;
+  pointer-events: none; /* 让中间部分可以点击穿透 */
+}
+
+/* 让头部的子元素可以点击 */
+.site-header > * {
+  pointer-events: auto;
+}
+
+/* 品牌标题 - 无背景，与页面融为一体 */
+.site-header .brand {
+  background: transparent;
+  padding: 0;
+  transition: opacity 0.3s ease;
+}
+
+.site-header .brand:hover {
+  opacity: 0.8;
+}
+
+/* 主题切换按钮背景 */
+.site-header button {
+  background: var(--bg);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  margin-top: -2px; /* 微调按钮位置对齐 */
+}
+
+.dark .site-header button {
+  background: rgba(15, 15, 15, 0.9);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+}
+/* 为固定header留出空间 */
+body {
+  padding-top: 60px;
+}
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav a {
+  color: var(--muted);
+  transition: color 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.nav a:hover {
+  color: var(--fg);
+  background-color: rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+}
+
+.dark .nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  transition: border-color 0.3s ease;
+}
+
+/* 页脚样式 */
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.contact-icons {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.contact-item:hover {
+  color: var(--fg);
+}
+
+.contact-item svg {
+  flex-shrink: 0;
+}
+
+.copyright {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* 旧的布局样式 - 保留以兼容 */
+.layout{position:relative;display:block}
+.article{max-width:960px;margin:0 auto;padding:0 24px}
+.sidebar{display:none}
+
+/* 文章样式 */
+.article h1,.article h2,.article h3,.article h4{scroll-margin-top:80px}
+.article img{max-width:100%;height:auto}
+/* 代码块字体 - 使用等宽字体 */
+pre,code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+/* 评论区 */
+.comments{border-top:1px solid var(--border);margin-top:24px;padding-top:16px}
+
+/* 评论项布局 */
+.comment-item {
+  display: flex;
+  gap: 12px;
+  position: relative;
+}
+
+.comment-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.comment-item:hover .comment-actions {
+  opacity: 1;
+}
+
+/* 用户身份区域 */
+.comment-user-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.dark .comment-user-identity {
+  background: #1f2937;
+}
+
+.identity-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.identity-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.identity-nickname {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.dice-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dice-button:hover:not(:disabled) {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.dice-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+/* 动画效果 */
+.rotating {
+  animation: rotate 0.3s ease-in-out;
+}
+
+.fading {
+  animation: fade 0.3s ease-in-out;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* 评论输入区 */
+.comment-input-area {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.comment-textarea {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .comment-textarea:focus {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* 评论列表 */
+.comment-list {
+  margin-top: 24px;
+}
+
+.no-comments {
+  color: var(--muted);
+  text-align: center;
+  padding: 32px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.comment-avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.comment-author {
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.comment-time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.comment-text {
+  line-height: 1.6;
+  color: var(--fg);
+}
+
+/* 新增评论功能样式 */
+.comment-count {
+  color: var(--muted);
+  font-weight: normal;
+  font-size: 0.9em;
+}
+
+.comment-error {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #c33;
+}
+
+.retry-button {
+  background: #c33;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8em;
+}
+
+.retry-button:hover {
+  background: #a22;
+}
+
+.loading-comments {
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.load-more-container {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.load-more-button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.load-more-button:hover {
+  background: var(--border);
+}
+
+.load-more-button.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* like 与分享 */
+.actions{display:flex;gap:12px;align-items:center;margin:16px 0}
+.button {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .button:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 点赞按钮 */
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.like-icon {
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.like-button:hover .like-icon {
+  transform: scale(1.2);
+}
+
+.like-button[aria-pressed="true"] {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* 新增点赞功能样式 */
+.like-button-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.like-button.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.like-button.loading .like-icon {
+  animation: pulse 1s infinite;
+}
+
+.like-error {
+  color: #ef4444;
+  font-size: 12px;
+  cursor: help;
+}
+
+.button.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.like-count {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* 图标按钮样式优化 */
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.like-button:hover:not(:disabled) {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.like-button[aria-pressed="true"] {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.like-button .like-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.like-button[aria-pressed="true"] .like-icon {
+  color: #ef4444;
+}
+
+.like-button:hover .like-icon {
+  color: #ef4444;
+}
+
+/* 分享按钮样式 */
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.share-button svg {
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.share-button:hover svg {
+  color: #111;
+}
+
+/* 提交按钮样式 */
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 8px 12px;
+}
+
+.submit-button svg {
+  color: currentColor;
+}
+
+/* 复制提示弹窗 */
+.copy-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+
