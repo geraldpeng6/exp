@@ -9,6 +9,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 export const metadata: Metadata = {
   title: "Peng's Blog",
   description: "A minimalist blog powered by Markdown",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cheche.vercel.app'),
+  openGraph: {
+    siteName: "Peng's Blog",
+    type: 'website',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://cheche.vercel.app',
+  },
 };
 
 export default function RootLayout({
@@ -17,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <ThemeScript />
       </head>

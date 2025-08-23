@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { TocItem } from "./MarkdownViewer";
 import { focusHeadingById } from "@/lib/scroll";
+import { createSlug } from "@/lib/slug";
 
 // 极简的目录组件
 export default function TOC({ toc }: { toc: TocItem[] }) {
@@ -82,8 +83,8 @@ export default function TOC({ toc }: { toc: TocItem[] }) {
         else window.location.hash = hash;
       } catch {}
 
-      // 滚动并高亮
-      focusHeadingById(item.id, { behavior: "smooth", delayMs: 300 });
+      // 滚动并高亮（不传色值，交由 scroll.ts 按浅/深色主题自动选择，确保两个 TOC 一致）
+      focusHeadingById(item.id, { behavior: "smooth", delayMs: 300, durationMs: 1200 });
       setActiveId(item.id);
       return true;
     };
