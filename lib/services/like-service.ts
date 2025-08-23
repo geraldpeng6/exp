@@ -330,6 +330,87 @@ export async function getPopularArticles(
 }
 
 /**
+ * 获取热门文章（按 点赞数+评论数 排序）
+ */
+export async function getHotArticlesByEngagement(
+  options: {
+    limit?: number;
+    timeRange?: 'day' | 'week' | 'month' | 'all';
+  } = {}
+): Promise<{
+  articleId: string;
+  likeCount: number;
+  commentCount: number;
+  total: number;
+}[]> {
+  const { limit = 10, timeRange = 'all' } = options;
+  const db = getDatabase();
+
+  let timeFilter = '';
+  let timeFilterComments = '';
+  const params: any[] = [];
+  const params2: any[] = [];
+
+  if (timeRange !== 'all') {
+    const now = Math.floor(Date.now() / 1000);
+    let timeAgo = 0;
+    switch (timeRange) {
+      case 'day':
+        timeAgo = now - 24 * 60 * 60;
+        break;
+      case 'week':
+        timeAgo = now - 7 * 24 * 60 * 60;
+        break;
+      case 'month':
+        timeAgo = now - 30 * 24 * 60 * 60;
+        break;
+      default:
+        timeAgo = 0;
+    }
+    timeFilter = 'WHERE created_at >= ?';
+    timeFilterComments = 'WHERE created_at >= ?';
+    params.push(timeAgo);
+    params2.push(timeAgo);
+  }
+
+  const likesSub = db.prepare(`
+    SELECT article_id AS articleId, COUNT(*) AS likeCount
+    FROM likes
+    ${timeFilter}
+    GROUP BY article_id
+  `).all(...params) as { articleId: string; likeCount: number }[];
+
+  const commentsSub = db.prepare(`
+    SELECT article_id AS articleId, COUNT(*) AS commentCount
+    FROM comments
+    ${timeFilterComments}
+    GROUP BY article_id
+  `).all(...params2) as { articleId: string; commentCount: number }[];
+
+  // 合并：按 articleId 聚合
+  const map = new Map<string, { articleId: string; likeCount: number; commentCount: number; total: number }>();
+  for (const l of likesSub) {
+    map.set(l.articleId, { articleId: l.articleId, likeCount: l.likeCount, commentCount: 0, total: l.likeCount });
+  }
+  for (const c of commentsSub) {
+    const prev = map.get(c.articleId);
+    if (prev) {
+      prev.commentCount = c.commentCount;
+      prev.total = prev.likeCount + c.commentCount;
+      map.set(c.articleId, prev);
+    } else {
+      map.set(c.articleId, { articleId: c.articleId, likeCount: 0, commentCount: c.commentCount, total: c.commentCount });
+    }
+  }
+
+  const merged = Array.from(map.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
+
+  return merged;
+}
+
+/**
  * 获取点赞统计信息
  */
 export async function getLikeStats(articleId?: string): Promise<{

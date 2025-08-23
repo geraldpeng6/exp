@@ -35,22 +35,21 @@ export default function ArticleTabsSimple({ articles, popularArticles = [] }: Ar
     // 最近发布 - 按时间排序
     const recent = [...articles].sort((a, b) => +new Date(b.date) - +new Date(a.date));
     
-    // 热门 - 根据热门文章列表排序
-    const popular = articles.filter(article => popularArticles.includes(article.slug))
+    // 热门 - 根据热门文章列表排序（点赞+评论综合）
+    const popular = articles
+      .filter(article => popularArticles.includes(article.slug))
       .sort((a, b) => popularArticles.indexOf(a.slug) - popularArticles.indexOf(b.slug));
-    
-    // 技术分享 - 包含技术相关标签的文章
-    const tech = articles.filter(article => 
-      article.tags?.some(tag => 
-        ['技术', 'tech', 'javascript', 'react', 'nextjs', 'typescript', 'web', '前端', '后端', '开发'].includes(tag.toLowerCase())
-      )
+
+    // 技术分享 - 标签包含：技术、技术分享、AI、LLM
+    const techTags = new Set(['技术', '技术分享', 'ai', 'llm']);
+    const tech = articles.filter(article =>
+      (article.tags || []).some(tag => techTags.has(String(tag).toLowerCase()))
     );
-    
-    // 杂谈 - 其他文章
-    const misc = articles.filter(article => 
-      !article.tags?.some(tag => 
-        ['技术', 'tech', 'javascript', 'react', 'nextjs', 'typescript', 'web', '前端', '后端', '开发'].includes(tag.toLowerCase())
-      )
+
+    // 杂谈 - 标签包含：杂谈、闲聊
+    const miscTags = new Set(['杂谈', '闲聊']);
+    const misc = articles.filter(article =>
+      (article.tags || []).some(tag => miscTags.has(String(tag)))
     );
 
     return { recent, popular, tech, misc };
