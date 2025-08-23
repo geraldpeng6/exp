@@ -1,7 +1,7 @@
 ---
-title: RAG Evaluation from First Principles
+title: "RAG Evaluation from First Principles"
 date: 2025-08-23T00:00:00.000Z
-summary: A compact, practical method to measure whether your retrieval‑augmented generation system helps users — not just vectors.
+summary: "A compact, practical method to measure whether your retrieval‑augmented generation system helps users — not just vectors."
 tags: [AI, LLM, RAG, Evaluation]
 ---
 

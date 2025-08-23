@@ -1,7 +1,7 @@
 ---
-title: LLM Agents in Production (2025): Practical Patterns That Survive Contact with Reality
+title: "LLM Agents in Production (2025): Practical Patterns That Survive Contact with Reality"
 date: 2025-08-23T00:00:00.000Z
-summary: A practitioner’s guide to deploying LLM agents that are reliable, observable, and cost‑aware — covering orchestration, memory, tools, evaluation, and failure handling.
+summary: "A practitioner’s guide to deploying LLM agents that are reliable, observable, and cost‑aware — covering orchestration, memory, tools, evaluation, and failure handling."
 tags: [AI, LLM, Agents, Production]
 ---
 

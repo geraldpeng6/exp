@@ -1,7 +1,7 @@
 ---
-title: System Prompts That Scale
+title: "System Prompts That Scale"
 date: 2025-08-23T00:00:00.000Z
-summary: How to design prompts like APIs — versioned, testable, and resilient to model drift.
+summary: "How to design prompts like APIs — versioned, testable, and resilient to model drift."
 tags: [AI, LLM, Prompt Engineering]
 ---
 
