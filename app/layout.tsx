@@ -5,6 +5,7 @@ import BrandDecor from "@/components/BrandDecor";
 import Footer from "@/components/Footer";
 import ThemeProvider, { ThemeScript } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import BackToTop from "@/components/BackToTop";
 
 export const metadata: Metadata = {
   title: "Peng's Blog",
@@ -37,6 +38,7 @@ export default function RootLayout({
           </header>
           <main className="container">{children}</main>
           <Footer />
+          <BackToTop />
         </ThemeProvider>
       </body>
     </html>
