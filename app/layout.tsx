@@ -28,7 +28,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="paper-canvas">
         <ThemeProvider>
           <header className="site-header">
             {/* 站点标题，用 rough-notation 装饰 */}

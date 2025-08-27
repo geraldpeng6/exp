@@ -5,6 +5,7 @@
 
 /* Import additional markdown styles */
 @import './markdown-styles.css';
+@import './theme-paper.css';
 
 /* Smooth scrolling behavior for the entire document */
 @layer base {
@@ -68,7 +69,7 @@ a:hover {
 }
 
 .container {
-  max-width: 960px;
+  max-width: 1280px; /* widened from 960px to allow wider article area on desktop */
   margin: 0 auto;
   padding: 24px;
 }

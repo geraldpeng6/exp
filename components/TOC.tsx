@@ -5,7 +5,7 @@ import { focusHeadingById } from "@/lib/scroll";
 import { createSlug } from "@/lib/slug";
 
 // 极简的目录组件
-export default function TOC({ toc }: { toc: TocItem[] }) {
+export default function TOC({ toc, onItemClick }: { toc: TocItem[]; onItemClick?: () => void }) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // 监听滚动，高亮当前章节
@@ -86,6 +86,8 @@ export default function TOC({ toc }: { toc: TocItem[] }) {
       // 滚动并高亮（不传色值，交由 scroll.ts 按浅/深色主题自动选择，确保两个 TOC 一致）
       focusHeadingById(item.id, { behavior: "smooth", delayMs: 300, durationMs: 1200 });
       setActiveId(item.id);
+      // 导航成功后回调（用于移动端自动关闭目录）
+      try { onItemClick?.(); } catch {}
       return true;
     };
 

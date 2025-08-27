@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/articles/")) return null;
   const [copiedText, setCopiedText] = useState<string>("");
 
   const copyToClipboard = async (text: string, label: string) => {

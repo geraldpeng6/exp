@@ -1,0 +1,79 @@
+/* Paper & Frosted surfaces (modular, pluggable) */
+/* Page canvas: very subtle paper texture on the whole page */
+.paper-canvas {
+  background-color: var(--paper-bg);
+  background-image:
+    radial-gradient(var(--paper-grain-2) 1px, transparent 1.5px),
+    radial-gradient(var(--paper-grain-1) 1px, transparent 1.5px);
+  background-size: 36px 36px, 28px 28px;
+  background-position: 0 0, 18px 14px;
+}
+
+
+/* Shared variables */
+:root {
+  --paper-bg: #faf8f6; /* warm white */
+  --paper-fg: #111111;
+  --paper-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --paper-border-light: rgba(0, 0, 0, 0.06);
+  --paper-grain-1: rgba(0, 0, 0, 0.03);
+  --paper-grain-2: rgba(0, 0, 0, 0.02);
+
+  --frosted-bg: rgba(255, 255, 255, 0.6);
+  --frosted-border: rgba(255, 255, 255, 0.4);
+  --frosted-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --paper-bg: #121212; /* charcoal paper */
+  --paper-fg: #f5f5f5;
+  --paper-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+  --paper-border-light: rgba(255, 255, 255, 0.08);
+  --paper-grain-1: rgba(255, 255, 255, 0.04);
+  --paper-grain-2: rgba(255, 255, 255, 0.03);
+
+  --frosted-bg: rgba(15, 15, 15, 0.5);
+  --frosted-border: rgba(255, 255, 255, 0.09);
+  --frosted-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
+
+/* Subtle paper grain using layered radial gradients; no external assets */
+.paper-surface {
+  position: relative;
+  background-color: var(--paper-bg);
+  /* Two grain layers */
+  background-image:
+    radial-gradient(var(--paper-grain-1) 1px, transparent 1.5px),
+    radial-gradient(var(--paper-grain-2) 1px, transparent 1.5px);
+  background-size: 22px 22px, 18px 18px;
+  background-position: 0 0, 12px 10px;
+
+  /* Soft border + elevation */
+  border: 1px solid var(--paper-border-light);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--paper-shadow);
+  color: var(--paper-fg);
+}
+
+/* Optional rounded edge helper with gentle inner shadow */
+.paper-edge {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Frosted glass panel (use on overlays/sidebars/toolbars) */
+.frosted-surface {
+  background: var(--frosted-bg);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  border: 1px solid var(--frosted-border);
+  box-shadow: var(--frosted-shadow);
+}
+
+/* Thin divider utility (subtler than default border) */
+.divider-subtle {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.dark .divider-subtle {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
