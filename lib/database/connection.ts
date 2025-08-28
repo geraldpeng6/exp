@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { readFileSync } from 'fs';
+import { readFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -16,8 +16,18 @@ let db: Database.Database | null = null;
  */
 export function getDatabase(): Database.Database {
   if (!db) {
-    // 数据库文件路径（存储在项目根目录的 data 文件夹中）
-    const dbPath = join(process.cwd(), 'data', 'blog.db');
+    // 根据环境决定数据库路径：
+    // - 在 Vercel 等只读文件系统环境下默认使用内存数据库，避免写盘报错
+    // - 可通过设置环境变量 DB_PATH=':memory:' 强制内存模式
+    // - 如需允许写盘（自托管或持久化卷），设置 ALLOW_DISK_WRITE='1'
+    const useMemory = (process.env.DB_PATH === ':memory:') || (process.env.VERCEL && process.env.ALLOW_DISK_WRITE !== '1');
+    const dbPath = useMemory ? ':memory:' : join(process.cwd(), 'data', 'blog.db');
+
+    // 确保数据目录存在（仅磁盘模式）
+    if (!useMemory) {
+      try { mkdirSync(join(process.cwd(), 'data'), { recursive: true }); } catch {}
+    }
+
 
     // 创建数据库连接
     db = new Database(dbPath);

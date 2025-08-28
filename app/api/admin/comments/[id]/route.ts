@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { withTransaction } from '@/lib/database/connection';

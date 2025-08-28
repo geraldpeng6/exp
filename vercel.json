@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
+  "env": {
+    "DB_PATH": ":memory:",
+    "ALLOW_DISK_WRITE": "0"
+  }
+}
+
