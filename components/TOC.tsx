@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { TocItem } from "./MarkdownViewer";
 import { focusHeadingById } from "@/lib/scroll";
-import { createSlug } from "@/lib/slug";
+// import { createSlug } from "@/lib/slug";
 
 // 极简的目录组件
 export default function TOC({ toc, onItemClick }: { toc: TocItem[]; onItemClick?: () => void }) {
@@ -41,8 +41,10 @@ export default function TOC({ toc, onItemClick }: { toc: TocItem[]; onItemClick?
 
     // 2) CSS.escape 兜底（少数特殊字符）
     try {
-      // @ts-ignore - CSS.escape 可能不存在于某些 TS 环境声明
-      const esc = (window.CSS?.escape ? window.CSS.escape(id) : id) as string;
+      // CSS.escape 在部分环境下无类型声明，使用可选链并回退到原始 id
+      type CssNs = { escape?: (s: string) => string };
+      const cssNs: CssNs | undefined = typeof window !== 'undefined' ? (window as unknown as { CSS?: CssNs }).CSS : undefined;
+      const esc = (cssNs?.escape ? cssNs.escape(id) : id) as string;
       const bySelector = document.querySelector(`#${esc}`) as HTMLElement | null;
       if (bySelector) return bySelector;
     } catch {}

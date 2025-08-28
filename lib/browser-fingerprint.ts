@@ -42,8 +42,8 @@ export function generateBrowserFingerprint(): string {
     
     // 内存信息（如果可用）
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      features.push(memory.jsHeapSizeLimit?.toString() || '');
+      const memory = (performance as unknown as { memory?: { jsHeapSizeLimit?: number } }).memory;
+      features.push(memory?.jsHeapSizeLimit?.toString() || '');
     }
     
     // Canvas 指纹

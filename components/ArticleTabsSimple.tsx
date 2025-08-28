@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
-import { Clock, TrendingUp, Code, MessageCircle } from "lucide-react";
+import { Clock, TrendingUp, Code, MessageCircle, Eye, Heart } from "lucide-react";
 import Link from "next/link";
 import { ArticleMeta } from "@/lib/articles";
 import { Tab } from "@headlessui/react";
@@ -34,7 +34,7 @@ export default function ArticleTabsSimple({ articles, popularArticles = [] }: Ar
   const categorizedArticles = useMemo(() => {
     // 最近发布 - 按时间排序
     const recent = [...articles].sort((a, b) => +new Date(b.date) - +new Date(a.date));
-    
+
     // 热门 - 根据热门文章列表排序（点赞+评论综合）
     const popular = articles
       .filter(article => popularArticles.includes(article.slug))
@@ -136,7 +136,7 @@ export default function ArticleTabsSimple({ articles, popularArticles = [] }: Ar
                         </h3>
 
                         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          <span>{new Date(article.date).toLocaleDateString()}</span>
+                          <span>{new Date(article.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' })}</span>
                           {article.tags && article.tags.length > 0 && (
                             <div className="flex gap-1">
                               {article.tags.slice(0, 2).map((tag) => (
@@ -157,6 +157,9 @@ export default function ArticleTabsSimple({ articles, popularArticles = [] }: Ar
                           )}
                         </div>
 
+                        {/* 统计行 */}
+                        <StatsRow slug={article.slug} />
+
                         {article.summary && (
                           <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-2">
                             {article.summary}
@@ -172,5 +175,43 @@ export default function ArticleTabsSimple({ articles, popularArticles = [] }: Ar
         })}
       </Tab.Panels>
     </Tab.Group>
+  );
+}
+
+
+function StatsRow({ slug }: { slug: string }) {
+  const [data, setData] = useState<{ pv: number; likes: number; comments: number } | null>(null);
+
+  useEffect(() => {
+    let aborted = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/articles/stats?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+        const j = await res.json().catch(() => ({}));
+        const d = j?.data?.[slug];
+        if (!aborted && d) setData(d);
+      } catch {}
+    })();
+    return () => { aborted = true; };
+  }, [slug]);
+
+  return (
+    <div className="mt-2 flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+      <div className="group relative inline-flex items-center gap-1">
+        <Eye className="w-3.5 h-3.5" />
+        <span>{data?.pv ?? 0}</span>
+        <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">阅读数</span>
+      </div>
+      <div className="group relative inline-flex items-center gap-1">
+        <Heart className="w-3.5 h-3.5" />
+        <span>{data?.likes ?? 0}</span>
+        <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">点赞数</span>
+      </div>
+      <div className="group relative inline-flex items-center gap-1">
+        <MessageCircle className="w-3.5 h-3.5" />
+        <span>{data?.comments ?? 0}</span>
+        <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">评论数</span>
+      </div>
+    </div>
   );
 }

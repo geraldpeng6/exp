@@ -1,11 +1,13 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import BrandDecor from "@/components/BrandDecor";
 import Footer from "@/components/Footer";
 import ThemeProvider, { ThemeScript } from "@/components/ThemeProvider";
+import ToastContainer from "@/components/ToastContainer";
 import ThemeToggle from "@/components/ThemeToggle";
-import BackToTop from "@/components/BackToTop";
+import AnalyticsClient from "@/components/AnalyticsClient";
 
 export const metadata: Metadata = {
   title: "Peng's Blog",
@@ -26,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+        <link rel="alternate" type="application/rss+xml" title="Peng's Blog RSS" href="/rss.xml" />
         <ThemeScript />
       </head>
       <body suppressHydrationWarning className="paper-canvas">
@@ -36,9 +39,15 @@ export default function RootLayout({
             {/* 主题切换按钮 */}
             <ThemeToggle />
           </header>
-          <main className="container">{children}</main>
+          <main className="container">
+            {children}
+          </main>
           <Footer />
-          <BackToTop />
+          {/* 客户端匿名埋点需要包裹在 Suspense 中，避免 useSearchParams 构建期报错 */}
+          <Suspense fallback={null}>
+            <AnalyticsClient />
+          </Suspense>
+          <ToastContainer />
         </ThemeProvider>
       </body>
     </html>

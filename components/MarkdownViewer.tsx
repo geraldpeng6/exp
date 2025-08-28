@@ -24,76 +24,95 @@ export interface TocItem {
 // ByteMD 自定义插件：
 // 1) 将 "language-latex/tex/math" 代码块渲染为 KaTeX 公式（DOM 层）
 // 2) 将 GitHub 风格提示块 [!NOTE] 等转换为样式化的提示框（AST 层，避免水合回退）
+type AstNode = {
+  type?: string;
+  tagName?: string;
+  lang?: string;
+  properties?: { className?: string[] | string; id?: string } & Record<string, unknown>;
+  children?: AstNode[];
+  value?: string;
+};
+
+// Narrow-typed alias to avoid importing 'unist'/'hast' types while keeping strictness
+const visitAny = visit as unknown as (tree: unknown, test: unknown, visitor: (...args: unknown[]) => unknown) => void;
+
 const admonitionAndLatexPlugin: BytemdPlugin = {
   // 将 latex/tex/math 语言的代码围栏在 remark 阶段转换为 math 块，交由 @bytemd/plugin-math SSR 渲染
   remark(processor) {
     return processor.use(function latexCodeToMathRemark() {
-      return (tree: any) => {
+      return (tree: unknown) => {
         // 仅清理 KaTeX 常见问题的零宽字符与 BOM（保留换行/空格等 Markdown 结构）
         const INVISIBLES = /[\u180E\u00AD\u200B-\u200F\uFEFF\u202A-\u202E\u2060-\u2064\u2066-\u2069]/g;
         const NBSP = /[\u00A0\u202F]/g;
         const normalizeMath = (v: string) => ((v || '').replace(INVISIBLES, '').replace(NBSP, ' '));
         // 代码围栏 -> math
-        visit(tree as any, 'code' as any, (node: any, index?: number, parent?: any) => {
-          const lang = (node.lang || '').toLowerCase();
-          if (!parent || typeof index !== 'number') return;
+        visitAny(tree, 'code', ((node: unknown, index?: number, parent?: unknown) => {
+          const nNode = node as AstNode;
+          const pNode = parent as AstNode | undefined;
+          const lang = (nNode.lang ?? '').toLowerCase();
+          if (!pNode || typeof index !== 'number' || !Array.isArray(pNode.children)) return;
           if (['latex', 'tex', 'math'].includes(lang)) {
-            const value = normalizeMath(node.value || '');
-            parent.children.splice(index, 1, { type: 'math', value });
+            const value = normalizeMath(nNode.value || '');
+            pNode.children.splice(index, 1, { type: 'math', value });
           }
-        });
+        }) as unknown as (...args: unknown[]) => unknown);
         // 清理 remark-math 产生的 math/inlineMath 节点中的不可见字符
-        visit(tree as any, 'math' as any, (node: any) => {
-          node.value = normalizeMath(node.value || '');
-        });
-        visit(tree as any, 'inlineMath' as any, (node: any) => {
-          node.value = normalizeMath(node.value || '');
-        });
+        visitAny(tree, 'math', ((node: unknown) => {
+          const nNode = node as AstNode;
+          nNode.value = normalizeMath(nNode.value || '');
+        }) as unknown as (...args: unknown[]) => unknown);
+        visitAny(tree, 'inlineMath', ((node: unknown) => {
+          const nNode = node as AstNode;
+          nNode.value = normalizeMath(nNode.value || '');
+        }) as unknown as (...args: unknown[]) => unknown);
       };
     });
   },
   rehype(processor) {
     return processor.use(function admonitionRehypePlugin() {
-      return (tree: any) => {
-        const getText = (node: any): string => {
+      return (tree: unknown) => {
+        const getText = (node: AstNode | null | undefined): string => {
           if (!node) return "";
           if (node.type === "text") return node.value || "";
-          if (Array.isArray(node.children)) return node.children.map(getText).join("");
+          if (Array.isArray(node.children)) return (node.children as AstNode[]).map(getText).join("");
           return "";
         };
 
         // 1) 为所有 h1-h6 生成（或规范化）GitHub 风格的 id（保留中文），并保证唯一
         const usedIds = new Set<string>();
-        visit(tree as any, 'element' as any, (node: any) => {
-          const tag = node.tagName;
+        visitAny(tree, 'element', ((node: unknown) => {
+          const nNode = node as AstNode;
+          const tag = nNode.tagName ?? '';
           if (!/^h[1-6]$/.test(tag)) return;
-          const text = getText(node).trim();
-          let base = createSlug(text) || 'section';
+          const text = getText(nNode).trim();
+          const base = createSlug(text) || 'section';
           let finalId = base;
-          let n = 1;
+          let counter = 1;
           while (usedIds.has(finalId)) {
-            finalId = `${base}-${n++}`;
+            finalId = `${base}-${counter++}`;
           }
           usedIds.add(finalId);
-          node.properties = node.properties || {};
-          node.properties.id = finalId;
-        });
+          nNode.properties = nNode.properties || {};
+          nNode.properties.id = finalId;
+        }) as unknown as (...args: unknown[]) => unknown);
 
         // 2) 将 GitHub 风格提示块 [!NOTE] 等转换为结构化的提示框
-        visit(tree as any, 'element' as any, (node: any, index?: number, parent?: any) => {
-          if (!parent || node.tagName !== 'blockquote') return;
-          const children = node.children || [];
+        visitAny(tree, 'element', ((node: unknown, index?: number, parent?: unknown) => {
+          const nNode = node as AstNode;
+          const pNode = parent as AstNode | undefined;
+          if (!pNode || nNode.tagName !== 'blockquote') return;
+          const children = nNode.children || [];
           if (!children.length) return;
 
           // 兼容首节点为换行/text 的情况，直接对整个 blockquote 文本做匹配
-          const wholeText = getText(node).trim();
+          const wholeText = getText(nNode).trim();
           const m = wholeText.match(/^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION|INFO|SUCCESS)\]\s*([\s\S]*)$/i);
           if (!m) return;
           const type = m[1].toLowerCase();
 
           // 优先从第一段里切出内联标题后的内容，否则退化为整段内容
           let inlineText = '';
-          const firstEl = children.find((ch: any) => ch && ch.type === 'element');
+          const firstEl = (children as AstNode[]).find((ch) => ch && ch.type === 'element');
           if (firstEl) {
             const t = getText(firstEl).trim();
             inlineText = (t.replace(/^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION|INFO|SUCCESS)\]\s*/i, '') || '').trim();
@@ -122,7 +141,7 @@ const admonitionAndLatexPlugin: BytemdPlugin = {
           const icon = iconMap[type] || '';
 
           // 内容区域：行内文本 + 余下的节点（排除第一段）
-          const contentChildren: any[] = [];
+          const contentChildren: AstNode[] = [];
           if (inlineText) {
             contentChildren.push({
               type: 'element',
@@ -131,11 +150,11 @@ const admonitionAndLatexPlugin: BytemdPlugin = {
               children: [{ type: 'text', value: inlineText }],
             });
           }
-          for (let i = 1; i < children.length; i++) {
+          for (let i = 1; i < (children as AstNode[]).length; i++) {
             contentChildren.push(children[i]);
           }
 
-          const wrapper: any = {
+          const wrapper: AstNode = {
             type: 'element',
             tagName: 'div',
             properties: { className: ['admonition', `admonition-${type}`] },
@@ -155,40 +174,43 @@ const admonitionAndLatexPlugin: BytemdPlugin = {
             ],
           };
 
-          if (typeof index === 'number' && parent && Array.isArray(parent.children)) {
-            parent.children.splice(index, 1, wrapper);
+          if (typeof index === 'number' && pNode && Array.isArray(pNode.children)) {
+            pNode.children.splice(index, 1, wrapper);
           }
-        });
+        }) as unknown as (...args: unknown[]) => unknown);
 
         // 3) 包装 KaTeX 块级节点为 .math-block，便于样式控制
-        visit(tree as any, 'element' as any, (node: any, index?: number, parent?: any) => {
-          if (!parent || node.tagName !== 'span') return;
-          const cls = (node.properties && node.properties.className) || [];
+        visitAny(tree, 'element', ((node: unknown, index?: number, parent?: unknown) => {
+          const nNode = node as AstNode;
+          const pNode = parent as AstNode | undefined;
+          if (!pNode || nNode.tagName !== 'span') return;
+          const cls = ((nNode.properties && nNode.properties.className) || []) as string[] | string;
           const hasDisplay = Array.isArray(cls) ? cls.includes('katex-display') : (typeof cls === 'string' && cls.split(/\s+/).includes('katex-display'));
           if (!hasDisplay) return;
           if (typeof index !== 'number') return;
-          const wrapper: any = {
+          const wrapper: AstNode = {
             type: 'element',
             tagName: 'div',
             properties: { className: ['math-block'] },
-            children: [node],
+            children: [nNode],
           };
-          parent.children.splice(index, 1, wrapper);
-        });
+          pNode.children?.splice(index, 1, wrapper);
+        }) as unknown as (...args: unknown[]) => unknown);
 
         // 4) 兜底：在 rehype 阶段再次清理所有文本节点中的不可见字符
         // 这一步可移除仍然混入到 KaTeX 输出结构中的零宽字符，避免控制台告警与渲染异常
         const INVISIBLES = /[\u180E\u00AD\u200B-\u200F\uFEFF\u202A-\u202E\u2060-\u2064\u2066-\u2069]/g;
         const NBSP = /[\u00A0\u202F]/g;
-        visit(tree as any, 'text' as any, (node: any) => {
-          if (typeof node.value === 'string' && (INVISIBLES.test(node.value) || NBSP.test(node.value))) {
-            node.value = node.value.replace(INVISIBLES, '').replace(NBSP, ' ');
+        visitAny(tree, 'text', ((node: unknown) => {
+          const nNode = node as AstNode;
+          if (typeof nNode.value === 'string' && (INVISIBLES.test(nNode.value) || NBSP.test(nNode.value))) {
+            nNode.value = nNode.value.replace(INVISIBLES, '').replace(NBSP, ' ');
           }
-        });
+        }) as unknown as (...args: unknown[]) => unknown);
       };
     });
   },
-  viewerEffect(ctx) {
+  viewerEffect() {
     // DOM 层不做任何渲染兜底，全部依赖 remark/rehype 管线，避免水合冲突与重复逻辑
     return () => {};
   },
@@ -211,7 +233,7 @@ export default function MarkdownViewer({
   const plugins = useMemo(() => [
     gfm(),
     // 先由 math 插件把 $/$$ 解析为 math/inlineMath，便于我们在后续 remark 中清理不可见字符
-    math({ katexOptions: { strict: 'ignore', trust: true, throwOnError: false } as any }),
+    math({ katexOptions: { strict: 'ignore', trust: true, throwOnError: false } }),
     // 我们的插件：remark(清理 math/inlineMath 与将 latex/tex/math 代码围栏转为 math)；rehype(admonition + heading id)
     admonitionAndLatexPlugin,
     highlightSsr(),
@@ -236,7 +258,7 @@ export default function MarkdownViewer({
           if (!id) {
             id = createSlug(text) || `heading-${index}`;
             // 若页面上已有同名 id，追加后缀
-            let base = id, n = 1;
+            const base = id; let n = 1;
             while (document.getElementById(id)) id = `${base}-${n++}`;
             el.id = id;
           }
@@ -289,7 +311,9 @@ export default function MarkdownViewer({
                 document.body.appendChild(textarea);
                 try {
                   textarea.select();
-                  document.execCommand && document.execCommand('copy');
+                  if (typeof document.execCommand === 'function') {
+                    document.execCommand('copy');
+                  }
                 } finally {
                   document.body.removeChild(textarea);
                 }
@@ -367,7 +391,7 @@ export default function MarkdownViewer({
             handleHashNavigation();
           });
           // 挂到元素上，unmount 时清理
-          (markdownBody as any).__anchorCleanup = cleanup;
+          (markdownBody as HTMLElement & { __anchorCleanup?: () => void }).__anchorCleanup = cleanup;
         });
 
         // Listen for hash changes (browser back/forward)
@@ -379,7 +403,7 @@ export default function MarkdownViewer({
         window.addEventListener('hashchange', handlePopState);
 
         return () => {
-          try { (markdownBody as any).__anchorCleanup?.(); } catch {}
+          try { (markdownBody as unknown as { __anchorCleanup?: () => void }).__anchorCleanup?.(); } catch {}
           window.removeEventListener('popstate', handlePopState);
           window.removeEventListener('hashchange', handlePopState);
         };

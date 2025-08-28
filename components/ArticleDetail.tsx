@@ -6,8 +6,11 @@ import ArticleShareMenu from "./ArticleShareMenu";
 import Comments from "./Comments";
 import ScrollProgress from "./ScrollProgress";
 import Paper from "./Paper";
+import MobileTocGesture from "./MobileTocGesture";
+import SummarySection from "./SummarySection";
+import FloatingActionBar from "./FloatingActionBar";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // 客户端文章详情：管理 TOC 状态（中文注释）
 export interface ArticleClientData {
@@ -21,7 +24,33 @@ export interface ArticleClientData {
 export default function ArticleDetail({ a }: { a: ArticleClientData }) {
   const [toc, setToc] = useState<TocItem[]>([]);
   const [tocCollapsed, setTocCollapsed] = useState(false);
+  // 桌面端：根据鼠标是否在按钮附近显示按钮（半径检测）
   const [showToggleBtn, setShowToggleBtn] = useState(false);
+  const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+  // 半径采用当前窗口最短边的 1/4，范围更大更易发现
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth < 1024) return; // 仅桌面
+
+    const onMove = (e: MouseEvent) => {
+      const btn = toggleBtnRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      const radius = Math.min(window.innerWidth, window.innerHeight) / 4; // 窗口 1/4 半径
+      // 当目录折叠时，仅在半径内显示；展开时保持显示
+      if (tocCollapsed) {
+        setShowToggleBtn(dist <= radius);
+      } else {
+        setShowToggleBtn(true);
+      }
+    };
+
+    window.addEventListener('mousemove', onMove);
+    return () => window.removeEventListener('mousemove', onMove);
+  }, [tocCollapsed]);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -101,26 +130,11 @@ export default function ArticleDetail({ a }: { a: ArticleClientData }) {
     <>
       <ScrollProgress />
       <div className="relative transition-all duration-300 lg:pl-64">
-        {/* 桌面端：鼠标悬浮区域 */}
-      <div
-        className="hidden lg:block fixed left-0 top-0 w-20 h-full z-40"
-        onMouseEnter={() => {
-          if (tocCollapsed) {
-            setShowToggleBtn(true);
-          }
-        }}
-        onMouseLeave={() => {
-          if (tocCollapsed) {
-            // 延迟隐藏，给用户时间移动到按钮上
-            setTimeout(() => {
-              setShowToggleBtn(false);
-            }, 200);
-          }
-        }}
-      />
+  
 
-      {/* 桌面端：目录展开/收起按钮 */}
+      {/* 桌面端：目录展开/收起按钮（半径检测显示） */}
       <button
+        ref={toggleBtnRef}
         onClick={() => setTocCollapsed(!tocCollapsed)}
         className="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-50 items-center justify-center
           w-6 h-12 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm
@@ -132,16 +146,6 @@ export default function ArticleDetail({ a }: { a: ArticleClientData }) {
           opacity: tocCollapsed ? (showToggleBtn ? 1 : 0) : 1,
           transform: `translateY(-50%) translateX(${tocCollapsed && !showToggleBtn ? '-100%' : '0'})`,
           pointerEvents: tocCollapsed && !showToggleBtn ? 'none' : 'auto'
-        }}
-        onMouseEnter={() => {
-          if (tocCollapsed) {
-            setShowToggleBtn(true);
-          }
-        }}
-        onMouseLeave={() => {
-          if (tocCollapsed) {
-            setShowToggleBtn(false);
-          }
         }}
         title={tocCollapsed ? "展开目录" : "收起目录"}
         aria-label={tocCollapsed ? "展开目录" : "收起目录"}
@@ -162,17 +166,13 @@ export default function ArticleDetail({ a }: { a: ArticleClientData }) {
         <div className="hidden lg:block fixed inset-y-0 left-60 border-r border-gray-200 dark:border-gray-800 z-30 pointer-events-none" />
       )}
 
-      {/* 移动端：目录按钮（始终显示） */}
-      <button
-        onClick={() => setTocCollapsed(!tocCollapsed)}
-        className="lg:hidden fixed bottom-20 right-4 z-50 flex items-center justify-center
-          w-12 h-12 bg-white dark:bg-gray-800
-          rounded-full shadow-lg hover:shadow-xl
-          transition-all duration-300"
-        aria-label={tocCollapsed ? "展开目录" : "收起目录"}
-      >
-        <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-      </button>
+      {/* 移动端：短按/长按交互的目录按钮（再次点击可收缩） */}
+      <MobileTocGesture
+        toc={toc}
+        isSidebarOpen={!tocCollapsed}
+        onToggleSidebar={() => setTocCollapsed(v => !v)}
+        onOpenSidebar={() => setTocCollapsed(false)}
+      />
 
       {/* 桌面端目录侧边栏 */}
       <aside className={`fixed left-0 top-20 w-60 h-[calc(100vh-5rem)]
@@ -239,6 +239,10 @@ export default function ArticleDetail({ a }: { a: ArticleClientData }) {
                 </>
               )}
             </div>
+
+            {/* AI 摘要区域 */}
+            <SummarySection slug={a.slug} />
+
             <MarkdownViewer markdown={a.content} onRendered={setToc} />
             <div className="flex items-center gap-2 py-4">
               <LikeButton id={a.slug} />
@@ -254,6 +258,7 @@ export default function ArticleDetail({ a }: { a: ArticleClientData }) {
           </article>
         </Paper>
       </div>
+      <FloatingActionBar slug={a.slug} />
     </div>
     </>
   );

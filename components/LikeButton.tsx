@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getUserIdentity } from "@/lib/user-identity";
 // import { Heart } from "lucide-react";
 
@@ -11,17 +11,7 @@ export default function LikeButton({ id }: { id: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
-  useEffect(() => {
-    // 获取用户ID
-    const identity = getUserIdentity();
-    setUserId(identity.id);
-
-    // 从后端获取点赞状态
-    fetchLikeStatus(id, identity.id);
-  }, [id]);
-
-  // 获取点赞状态
-  const fetchLikeStatus = async (articleId: string, userId: string) => {
+  const fetchLikeStatus = useCallback(async (articleId: string, userId: string) => {
     try {
       const response = await fetch(`/api/likes?articleId=${encodeURIComponent(articleId)}&userId=${encodeURIComponent(userId)}`);
       const result = await response.json();
@@ -39,7 +29,18 @@ export default function LikeButton({ id }: { id: string }) {
       // 回退到 localStorage
       fallbackToLocalStorage(articleId, userId);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // 获取用户ID
+    const identity = getUserIdentity();
+    setUserId(identity.id);
+
+    // 从后端获取点赞状态
+    fetchLikeStatus(id, identity.id);
+  }, [id, fetchLikeStatus]);
+
+
 
   // 回退到 localStorage 的逻辑（兼容性处理）
   const fallbackToLocalStorage = (articleId: string, userId: string) => {

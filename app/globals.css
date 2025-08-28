@@ -21,6 +21,28 @@
   }
 }
 
+/* 防止首次进入时的“黑白交叉/闪烁”
+   - 在 ThemeScript 标记 data-theme-ready=1 之前，禁用关键过渡
+   - 避免 light/dark 变量切换时出现动画和层叠纹理的短暂混合 */
+html:not([data-theme-ready="1"]) body,
+html:not([data-theme-ready="1"]) a,
+html:not([data-theme-ready="1"]) .paper-canvas,
+html:not([data-theme-ready="1"]) .paper-surface {
+  transition: none !important;
+}
+
+
+/* html 背景色与纸纹背景保持一致，避免 body 尚未绘制时的颜色跳变 */
+html {
+  background-color: var(--paper-bg);
+}
+
+/* 初始化阶段也禁用 html 的过渡 */
+html:not([data-theme-ready="1"]) {
+  transition: none !important;
+}
+
+
 /* 全局极简风格样式（中文注释） */
 :root {
   --bg: #ffffff;
@@ -644,7 +666,7 @@ pre,code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Li
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  display: flex;
+  display: none; /* 默认在小屏不显示，由 MobileTocGesture 承担顶部返回 */
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -653,6 +675,13 @@ pre,code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Li
   transition: opacity 0.3s, visibility 0.3s, background-color 0.3s, color 0.3s;
   z-index: 100;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 在大屏显示 BackToTop（移动端隐藏） */
+@media (min-width: 1024px) {
+  .back-to-top-btn {
+    display: flex;
+  }
 }
 
 .back-to-top-btn:hover {

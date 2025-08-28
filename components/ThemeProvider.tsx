@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { initializeTheme } from '@/lib/theme';
 
 /**
  * 主题提供者组件
- * 负责初始化主题系统并防止闪烁
+ * 尽量不在首次渲染时改变布局，避免出现“黑白交叉/闪烁”。
+ * 真正的无闪烁由下方的 ThemeScript 完成。
  */
 
 interface ThemeProviderProps {
@@ -13,99 +14,74 @@ interface ThemeProviderProps {
 }
 
 export default function ThemeProvider({ children }: ThemeProviderProps) {
-  const [mounted, setMounted] = useState(false);
-
+  // 可选：在客户端水合后再次校准（幂等，不会引起闪烁）
   useEffect(() => {
-    // 初始化主题系统
     initializeTheme();
-    setMounted(true);
   }, []);
 
-  // 在客户端挂载之前，渲染一个占位符以防止闪烁
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-white">
-        {children}
-      </div>
-    );
-  }
-
+  // 不再渲染带背景色的占位容器，直接输出子节点，避免首屏双背景叠加
   return <>{children}</>;
 }
 
 /**
  * 主题初始化脚本
- * 这个脚本会在页面加载时立即执行，防止主题闪烁
+ * 在浏览器开始绘制前尽早运行：
+ * - 根据用户偏好或时间添加/移除 html.dark
+ * - 设置 color-scheme，避免滚动条等系统 UI 颜色闪烁
  */
 export function ThemeScript() {
   const script = `
     (function() {
       try {
-        // 主题配置
-        const THEME_CONFIG = {
+        var THEME_CONFIG = {
           AUTO_DARK_START: 18,
           AUTO_DARK_END: 6,
           STORAGE_KEY: 'blog-theme-preference',
-          DARK_CLASS: 'dark',
+          DARK_CLASS: 'dark'
         };
 
-        // 获取当前时间是否应该使用黑夜模式
         function shouldUseDarkMode() {
-          const now = new Date();
-          const hour = now.getHours();
+          var now = new Date();
+          var hour = now.getHours();
           return hour >= THEME_CONFIG.AUTO_DARK_START || hour < THEME_CONFIG.AUTO_DARK_END;
         }
 
-        // 获取用户的主题偏好
         function getThemePreference() {
           try {
-            const stored = localStorage.getItem(THEME_CONFIG.STORAGE_KEY);
-            if (stored && ['light', 'dark', 'auto'].includes(stored)) {
-              return stored;
-            }
-          } catch (error) {
-            console.warn('无法读取主题偏好:', error);
-          }
+            var stored = localStorage.getItem(THEME_CONFIG.STORAGE_KEY);
+            if (stored && ['light', 'dark', 'auto'].includes(stored)) return stored;
+          } catch (e) {}
           return 'auto';
         }
 
-        // 计算实际应该使用的主题
         function getActualTheme(preference) {
           switch (preference) {
-            case 'light':
-              return 'light';
-            case 'dark':
-              return 'dark';
-            case 'auto':
-            default:
-              return shouldUseDarkMode() ? 'dark' : 'light';
+            case 'light': return 'light';
+            case 'dark': return 'dark';
+            default: return shouldUseDarkMode() ? 'dark' : 'light';
           }
         }
 
-        // 应用主题到 DOM
         function applyTheme(theme) {
-          const root = document.documentElement;
-          if (theme === 'dark') {
-            root.classList.add(THEME_CONFIG.DARK_CLASS);
-          } else {
-            root.classList.remove(THEME_CONFIG.DARK_CLASS);
-          }
+          var root = document.documentElement;
+          if (theme === 'dark') root.classList.add(THEME_CONFIG.DARK_CLASS);
+          else root.classList.remove(THEME_CONFIG.DARK_CLASS);
+          // 同步系统配色方案，避免首次渲染滚动条颜色突变
+          root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
         }
 
-        // 立即应用主题
-        const preference = getThemePreference();
-        const actualTheme = getActualTheme(preference);
-        applyTheme(actualTheme);
-
-      } catch (error) {
-        console.warn('主题初始化失败:', error);
+        var pref = getThemePreference();
+        var actual = getActualTheme(pref);
+        applyTheme(actual);
+        // 标记主题已就绪，再开启 CSS 过渡，避免首屏闪烁
+        document.documentElement.setAttribute('data-theme-ready', '1');
+      } catch (e) {
+        // 忽略错误，保持页面可用
       }
     })();
   `;
 
   return (
-    <script
-      dangerouslySetInnerHTML={{ __html: script }}
-    />
+    <script dangerouslySetInnerHTML={{ __html: script }} />
   );
 }

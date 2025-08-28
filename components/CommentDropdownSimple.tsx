@@ -1,61 +1,16 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, Copy, Trash2, Clock } from "lucide-react";
-import { getBrowserFingerprint } from "@/lib/browser-fingerprint";
+import { MoreVertical, Copy } from "lucide-react";
 
 interface CommentDropdownProps {
-  commentId: string;
-  userId: string;
   content: string;
-  createdAt: number;
-  currentUserId?: string;
-  onDelete?: () => void;
 }
 
 export default function CommentDropdownSimple({
-  commentId,
-  userId,
-  content,
-  createdAt,
-  currentUserId,
-  onDelete
+  content
 }: CommentDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [fingerprint, setFingerprint] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 检查是否是当前用户的评论
-  const isOwnComment = currentUserId === userId;
-
-  useEffect(() => {
-    // 获取浏览器指纹
-    const fp = getBrowserFingerprint();
-    setFingerprint(fp);
-
-    if (isOwnComment && fp) {
-      checkDeletePermission();
-    }
-  }, [isOwnComment, commentId, userId]);
-
-  useEffect(() => {
-    // 如果可以删除，启动倒计时
-    if (canDelete && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setCanDelete(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [canDelete, timeLeft]);
 
   useEffect(() => {
     // 点击外部关闭下拉菜单
@@ -68,22 +23,6 @@ export default function CommentDropdownSimple({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const checkDeletePermission = async () => {
-    try {
-      const response = await fetch(
-        `/api/comments/${commentId}?action=check-delete&userId=${userId}&fingerprint=${fingerprint}`
-      );
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        setCanDelete(result.data.canDelete);
-        setTimeLeft(result.data.timeLeft || 0);
-      }
-    } catch (error) {
-      console.error('检查删除权限失败:', error);
-    }
-  };
 
   const handleCopy = async () => {
     try {
@@ -109,47 +48,7 @@ export default function CommentDropdownSimple({
     }
   };
 
-  const handleDelete = async () => {
-    if (!canDelete || isDeleting) return;
 
-    const confirmed = window.confirm('确定要删除这条评论吗？此操作无法撤销。');
-    if (!confirmed) return;
-
-    setIsDeleting(true);
-    setIsOpen(false);
-
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          browserFingerprint: fingerprint
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        onDelete?.();
-      } else {
-        alert(result.error || '删除失败');
-      }
-    } catch (error) {
-      console.error('删除评论失败:', error);
-      alert('删除失败，请稍后重试');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
@@ -217,57 +116,7 @@ export default function CommentDropdownSimple({
               复制内容
             </button>
 
-            {isOwnComment && (
-              <button
-                onClick={handleDelete}
-                disabled={!canDelete || isDeleting}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '8px 16px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: canDelete && !isDeleting ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
-                  color: canDelete && !isDeleting ? '#dc2626' : '#9ca3af',
-                  transition: 'background-color 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (canDelete && !isDeleting) {
-                    e.currentTarget.style.backgroundColor = '#fef2f2';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                {isDeleting ? (
-                  <>
-                    <div style={{
-                      marginRight: '12px',
-                      width: '16px',
-                      height: '16px',
-                      border: '2px solid #dc2626',
-                      borderTopColor: 'transparent',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }} />
-                    删除中...
-                  </>
-                ) : canDelete ? (
-                  <>
-                    <Trash2 size={16} style={{ marginRight: '12px' }} />
-                    删除 ({formatTime(timeLeft)})
-                  </>
-                ) : (
-                  <>
-                    <Clock size={16} style={{ marginRight: '12px' }} />
-                    已超时无法删除
-                  </>
-                )}
-              </button>
-            )}
+            {/* 删除按钮已移除：用户界面不支持删除评论 */}
           </div>
         </div>
       )}

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createComment, getCommentsByArticle } from '@/lib/services/comment-service';
 import { getOrCreateUser } from '@/lib/services/user-service';
 import { checkRateLimit, RATE_LIMIT_CONFIGS, getClientIp } from '@/lib/security/rate-limit';
-import { validateData, createCommentSchema, nicknameSchema, avatarUrlSchema } from '@/lib/security/validation';
+import { validateData, createCommentSchema, avatarUrlSchema } from '@/lib/security/validation';
+import { getSpecialAvatarForNickname } from '@/lib/security/special-profile';
 
 /**
  * 评论 API 路由
@@ -138,33 +139,36 @@ export async function POST(request: NextRequest) {
     
     const { articleId, userId: validatedUserId, content, browserFingerprint } = validation.data;
 
-    // 验证快照字段
-    const nickCheck = validateData(nicknameSchema, body.nickname);
+    // 验证快照字段（头像链接可作为回退使用）
     const avatarUrlCheck = validateData(avatarUrlSchema, body.avatarUrl);
-    if (!nickCheck.success || !avatarUrlCheck.success) {
-      const message = !nickCheck.success ? nickCheck.error : avatarUrlCheck.success ? '' : avatarUrlCheck.error;
+    if (!avatarUrlCheck.success) {
       return NextResponse.json(
         {
-          error: `数据验证失败: ${message}`,
+          error: `数据验证失败: ${avatarUrlCheck.error}`,
           success: false
         },
         { status: 400 }
       );
     }
 
-    // 确保用户存在（如果不存在则创建），但评论表使用快照字段
-    await getOrCreateUser({
+    // 以数据库中的用户昵称为准，防止未授权的特殊昵称生效
+    const dbUser = await getOrCreateUser({
       id: validatedUserId,
-      nickname: body.nickname,
-      avatarSeed: 'snapshot' // 此字段仅用于初始化用户占位，实际展示依赖评论快照
+      nickname: '匿名用户',
+      avatarSeed: 'snapshot'
     });
+    const finalNickname = dbUser.nickname;
+
+    // 仅当数据库中的昵称本身匹配特殊规则时，才使用特殊头像覆盖
+    const overrideAvatar = getSpecialAvatarForNickname(finalNickname);
+    const finalAvatarUrl = overrideAvatar || body.avatarUrl;
 
     // 创建评论（带快照字段）
     const comment = await createComment({
       articleId,
       userId: validatedUserId,
-      nickname: body.nickname,
-      avatarUrl: body.avatarUrl,
+      nickname: finalNickname,
+      avatarUrl: finalAvatarUrl,
       content,
       browserFingerprint
     });

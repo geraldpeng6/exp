@@ -167,7 +167,7 @@ export function sanitizeUrl(url: string): string {
     return '';
   }
   
-  let cleaned = url.trim();
+  const cleaned = url.trim();
   
   // 只允许 http、https 和相对路径
   const allowedProtocols = /^(https?:\/\/|\/)/i;
@@ -215,11 +215,11 @@ export function sanitizeInput(
 /**
  * 批量清理对象中的字符串字段
  */
-export function sanitizeObject<T extends Record<string, any>>(
+export function sanitizeObject<T extends Record<string, unknown>>(
   obj: T,
   fieldTypes: Partial<Record<keyof T, 'text' | 'nickname' | 'comment' | 'path' | 'url'>> = {}
 ): T {
-  const sanitized = { ...obj } as any;
+  const sanitized: Record<string, unknown> = { ...obj };
 
   for (const [key, value] of Object.entries(sanitized)) {
     if (typeof value === 'string') {

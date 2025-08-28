@@ -9,7 +9,7 @@ export default function ShareButtons({ title }: { title: string }) {
     if (navigator.share) {
       try {
         await navigator.share({ title: shareText, url });
-      } catch (e) {
+      } catch {
         // 用户取消无须处理
       }
     } else {

@@ -184,21 +184,21 @@ export function createCombinedKey(action: string) {
 /**
  * 频率限制中间件工厂
  */
-export function createRateLimitMiddleware(
+export function createRateLimitMiddleware<Req = { headers?: Record<string, string | string[] | undefined> }>(
   config: RateLimitConfig,
-  getIdentifier: (req: any) => string
+  getIdentifier: (req: Req) => string
 ) {
-  return (req: any) => {
+  return (req: Req) => {
     const identifier = getIdentifier(req);
     const result = checkRateLimit(identifier, config);
-    
+
     if (!result.allowed) {
       const error = new Error('请求过于频繁，请稍后再试');
-      (error as any).statusCode = 429;
-      (error as any).retryAfter = result.retryAfter;
+      (error as unknown as { statusCode?: number }).statusCode = 429;
+      (error as unknown as { retryAfter?: number }).retryAfter = result.retryAfter;
       throw error;
     }
-    
+
     return result;
   };
 }
@@ -206,30 +206,33 @@ export function createRateLimitMiddleware(
 /**
  * 获取客户端 IP 地址
  */
-export function getClientIp(req: any): string {
-  // 尝试从各种可能的头部获取真实 IP
-  const forwarded = req.headers['x-forwarded-for'];
-  const realIp = req.headers['x-real-ip'];
-  const cfConnectingIp = req.headers['cf-connecting-ip'];
-  
+export type HeadersLike = Headers | Record<string, string | string[] | undefined>;
+
+export function getClientIp(req: { headers?: HeadersLike; connection?: { remoteAddress?: string | null }; socket?: { remoteAddress?: string | null }; ip?: string | null } | { headers?: HeadersLike }): string {
+  const headers: HeadersLike | undefined = (req as { headers?: HeadersLike }).headers;
+
+  const getHeader = (name: string): string | undefined => {
+    if (!headers) return undefined;
+    if (headers instanceof Headers) {
+      return headers.get(name) || undefined;
+    }
+    const v = headers[name.toLowerCase()] ?? headers[name];
+    if (Array.isArray(v)) return v[0];
+    return v as string | undefined;
+  };
+
+  const forwarded = getHeader('x-forwarded-for');
+  const realIp = getHeader('x-real-ip');
+  const cfConnectingIp = getHeader('cf-connecting-ip');
+
   if (forwarded) {
-    // x-forwarded-for 可能包含多个 IP，取第一个
     return forwarded.split(',')[0].trim();
   }
-  
-  if (realIp) {
-    return realIp;
-  }
-  
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-  
-  // 回退到连接 IP
-  return req.connection?.remoteAddress || 
-         req.socket?.remoteAddress || 
-         req.ip || 
-         'unknown';
+  if (realIp) return realIp;
+  if (cfConnectingIp) return cfConnectingIp;
+
+  const fallback = (req as { connection?: { remoteAddress?: string | null }; socket?: { remoteAddress?: string | null }; ip?: string | null });
+  return fallback.connection?.remoteAddress || fallback.socket?.remoteAddress || fallback.ip || 'unknown';
 }
 
 /**

@@ -79,7 +79,7 @@ export default function BrandDecor() {
 
   return (
     <span ref={ref} style={{ display: "inline-block" }}>
-      Peng's Blog
+      Peng&apos;s Blog
     </span>
   );
 }

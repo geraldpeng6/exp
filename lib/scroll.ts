@@ -14,7 +14,9 @@ export const HIGHLIGHT_YELLOW_DARK = "rgb(192, 132, 252)";  // #c084fc（purple-
 export const HIGHLIGHT_YELLOW = HIGHLIGHT_YELLOW_LIGHT;
 
 // 记录元素上的高亮实例，便于重复点击时清理
-const activeAnnotations = new WeakMap<Element, any>();
+// 类型尽量贴近 rough-notation 的返回值接口结构
+type AnnotationLike = { show?: () => void; hide?: () => void; remove?: () => void };
+const activeAnnotations = new WeakMap<Element, AnnotationLike>();
 
 /**
  * 将元素平滑滚动到视口垂直居中

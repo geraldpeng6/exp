@@ -144,7 +144,7 @@ export async function updateUser(userId: string, data: UpdateUserData): Promise<
     
     // 构建更新查询
     const updateFields: string[] = [];
-    const updateValues: any[] = [];
+    const updateValues: Array<string | number> = [];
     
     if (updateData.nickname !== undefined) {
       updateFields.push('nickname = ?');
@@ -318,7 +318,7 @@ export async function searchUsers(
 }> {
   const { page = 1, limit = 20 } = options;
   const offset = (page - 1) * limit;
-  
+
   // 清理搜索查询
   const sanitizedQuery = sanitizeNickname(query).trim();
   if (!sanitizedQuery) {
@@ -330,22 +330,22 @@ export async function searchUsers(
       totalPages: 0
     };
   }
-  
+
   const db = getDatabase();
   const searchPattern = `%${sanitizedQuery}%`;
-  
+
   // 获取总数
   const totalResult = db.prepare(`
-    SELECT COUNT(*) as count FROM users 
+    SELECT COUNT(*) as count FROM users
     WHERE nickname LIKE ?
   `).get(searchPattern) as { count: number };
-  
+
   const total = totalResult.count;
   const totalPages = Math.ceil(total / limit);
-  
+
   // 获取用户列表
   const users = db.prepare(`
-    SELECT 
+    SELECT
       id,
       nickname,
       avatar_seed as avatarSeed,
@@ -356,7 +356,7 @@ export async function searchUsers(
     ORDER BY nickname
     LIMIT ? OFFSET ?
   `).all(searchPattern, limit, offset) as User[];
-  
+
   return {
     users,
     total,
@@ -364,4 +364,18 @@ export async function searchUsers(
     limit,
     totalPages
   };
+}
+
+/**
+ * 通过昵称精确获取用户（用于判断“用户名是否已存在”）
+ */
+export async function getUserByNickname(nickname: string): Promise<User | null> {
+  const name = sanitizeNickname(nickname).trim();
+  if (!name) return null;
+  const db = getDatabase();
+  const row = db.prepare(`
+    SELECT id, nickname, avatar_seed as avatarSeed, created_at as createdAt, updated_at as updatedAt
+    FROM users WHERE nickname = ? LIMIT 1
+  `).get(name) as User | undefined;
+  return row || null;
 }

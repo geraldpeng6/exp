@@ -78,6 +78,7 @@ ${content}`;
 
 
   // 截取内容的前几段作为预览
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPreviewContent = (text: string, maxLength: number = 500) => {
     if (text.length <= maxLength) return text;
     const truncated = text.substring(0, maxLength);

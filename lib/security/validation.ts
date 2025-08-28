@@ -30,8 +30,9 @@ export const avatarSeedSchema = z.string()
 
 // 头像链接验证规则（用于评论快照）
 export const avatarUrlSchema = z.string()
-  .min(1, '头像链接不能为空')
-  .max(500, '头像链接过长');
+  .url('头像链接必须为有效的 URL')
+  .max(500, '头像链接过长')
+  .refine((v) => /^https?:\/\//i.test(v), '仅支持 http/https 链接');
 
 // 文章ID验证规则
 export const articleIdSchema = z.string()
@@ -69,9 +70,10 @@ export const createUserSchema = z.object({
 // 用户更新数据验证
 export const updateUserSchema = z.object({
   nickname: nicknameSchema.optional(),
-  avatarSeed: avatarSeedSchema.optional()
+  avatarSeed: avatarSeedSchema.optional(),
+  activationPassword: z.string().min(6).max(200).optional()
 }).refine(
-  (data) => data.nickname !== undefined || data.avatarSeed !== undefined,
+  (data) => data.nickname !== undefined || data.avatarSeed !== undefined || data.activationPassword !== undefined,
   '至少需要提供一个更新字段'
 );
 

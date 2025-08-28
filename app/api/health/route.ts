@@ -17,9 +17,9 @@ export async function GET(request: NextRequest) {
     // 基础健康检查
     const isHealthy = healthCheck();
     
-    const response: any = {
+    const response: Record<string, unknown> = {
       status: isHealthy ? 'healthy' : 'unhealthy',
-      timestamp: new Date().toISOString(),
+      timestamp: Math.floor(Date.now() / 1000),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '1.0.0'
     };
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         status: 'error',
-        timestamp: new Date().toISOString(),
+        timestamp: Math.floor(Date.now() / 1000),
         error: error instanceof Error ? error.message : '健康检查失败'
       },
       { status: 500 }

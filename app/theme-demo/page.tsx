@@ -2,6 +2,7 @@
 
 import ThemeToggle, { SimpleThemeToggle } from '@/components/ThemeToggle';
 import MarkdownViewer from "@/components/MarkdownViewer";
+import Link from "next/link";
 import { useState } from "react";
 
 const demoMarkdown = `
@@ -83,7 +84,8 @@ print(f"前10个斐波那契数: {result}")
  */
 
 export default function ThemeDemoPage() {
-  const [toc, setToc] = useState<any[]>([]);
+  type TocItem = { id: string; text: string; level: number };
+  const [, setToc] = useState<TocItem[]>([]);
 
   return (
     <div className="max-w-4xl mx-auto py-8 space-y-8">
@@ -261,12 +263,9 @@ export default function ThemeDemoPage() {
 
       {/* 返回链接 */}
       <div className="text-center pt-8">
-        <a
-          href="/"
-          className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-        >
+        <Link href="/" className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors" aria-label="返回首页">
           ← 返回首页
-        </a>
+        </Link>
       </div>
     </div>
   );

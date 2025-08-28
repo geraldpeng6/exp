@@ -4,14 +4,14 @@ export function interceptInPageAnchors(
   navigate: (id: string) => void
 ): () => void {
   const handler = (ev: Event) => {
-    const path = (ev as any).composedPath?.() as any[] | undefined;
-    const target = (path ? path.find((n) => (n as Element)?.tagName === 'A') : null) as HTMLAnchorElement | null
-                  || (ev.target as HTMLElement)?.closest?.('a');
+    const path = (ev as unknown as { composedPath?: () => EventTarget[] }).composedPath?.();
+    const target = (path ? (path.find((n) => (n as Element)?.tagName === 'A') as HTMLAnchorElement | undefined) : undefined)
+                  || (ev.target as HTMLElement | null)?.closest?.('a') || null;
     if (!target) return;
     const href = target.getAttribute('href') || '';
     if (!href || href[0] !== '#') return;
     ev.preventDefault?.();
-    (ev as any).stopPropagation?.();
+    (ev as unknown as { stopPropagation?: () => void }).stopPropagation?.();
     const id = decodeURIComponent(href.slice(1));
     try { history.pushState?.(null, '', `#${encodeURIComponent(id)}`); } catch {}
     navigate(id);

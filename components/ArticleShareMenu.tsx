@@ -5,7 +5,7 @@ import { Menu, Transition } from "@headlessui/react";
 import {
   Share2,
   Copy,
-  FileText,
+  Download,
   Check
 } from "lucide-react";
 
@@ -87,6 +87,7 @@ ${content}`;
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPreviewContent = (text: string, maxLength: number = 500) => {
     if (text.length <= maxLength) return text;
     const truncated = text.substring(0, maxLength);
@@ -99,7 +100,7 @@ ${content}`;
   return (
     <>
       <Menu as="div" className="relative inline-block text-left ml-auto">
-        <Menu.Button className="inline-flex items-center justify-center p-2 rounded-lg
+        <Menu.Button className="inline-flex items-center justify-center w-8 h-8 rounded-lg
           bg-white dark:bg-gray-800 transition-all duration-200
           text-gray-600 dark:text-gray-400
           border border-transparent hover:border-gray-200 dark:hover:border-gray-700">
@@ -115,7 +116,7 @@ ${content}`;
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="px-1 py-1">
               <Menu.Item>
                 {({ active }) => (
@@ -123,14 +124,15 @@ ${content}`;
                     onClick={handleCopyText}
                     className={`${
                       active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100`}
+                    } group relative inline-flex items-center justify-center w-8 h-8 rounded-md text-sm text-gray-900 dark:text-gray-100`}
+                    aria-label="复制文本"
                   >
                     {copiedText ? (
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     )}
-                    复制文本
+                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">复制文本</span>
                   </button>
                 )}
               </Menu.Item>
@@ -141,10 +143,11 @@ ${content}`;
                     onClick={handleDownloadMarkdown}
                     className={`${
                       active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100`}
+                    } group relative inline-flex items-center justify-center w-8 h-8 rounded-md text-sm text-gray-900 dark:text-gray-100`}
+                    aria-label="下载 Markdown"
                   >
-                    <FileText className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    下载 Markdown
+                    <Download className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">下载 Markdown</span>
                   </button>
                 )}
               </Menu.Item>
@@ -157,14 +160,15 @@ ${content}`;
                     onClick={handleCopyLink}
                     className={`${
                       active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100`}
+                    } group relative inline-flex items-center justify-center rounded-md px-1.5 py-1 text-sm text-gray-900 dark:text-gray-100`}
+                    aria-label="复制页面链接"
                   >
                     {copiedLink ? (
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     )}
-                    复制页面链接
+                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">复制页面链接</span>
                   </button>
                 )}
               </Menu.Item>

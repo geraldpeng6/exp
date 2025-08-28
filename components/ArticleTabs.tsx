@@ -1,7 +1,7 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Tab } from "@headlessui/react";
-import { Clock, TrendingUp, Code, MessageCircle } from "lucide-react";
+import { Clock, TrendingUp, Code, MessageCircle, Eye, Heart } from "lucide-react";
 import Link from "next/link";
 import { ArticleMeta } from "@/lib/articles";
 
@@ -66,11 +66,33 @@ export default function ArticleTabs({ articles, popularArticles = [] }: ArticleT
     }
   ];
 
+  // 文章统计：pv/likes/comments
+  const [stats, setStats] = useState<Record<string, { pv: number; likes: number; comments: number }>>({});
+  useEffect(() => {
+    // 当前标签下的文章集合
+    const current = tabs[selectedIndex]?.articles || [];
+    if (current.length === 0) return;
+    const slugs = current.map(a => a.slug);
+
+    let aborted = false;
+    (async () => {
+      try {
+        const url = `/api/articles/stats?slugs=${encodeURIComponent(slugs.join(','))}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        const j = await res.json();
+        if (!aborted && j?.success && j?.data) setStats(j.data);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { aborted = true; };
+  }, [selectedIndex, articles]);
+
   return (
     <div className="w-full">
       <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
         <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 p-1">
-          {tabs.map((tab, index) => (
+          {tabs.map((tab) => (
             <Tab
               key={tab.name}
               className={({ selected }) =>
@@ -92,9 +114,9 @@ export default function ArticleTabs({ articles, popularArticles = [] }: ArticleT
         </Tab.List>
         
         <Tab.Panels className="mt-6">
-          {tabs.map((tab, index) => (
+          {tabs.map((tab) => (
             <Tab.Panel
-              key={index}
+              key={tab.name}
               className="rounded-xl bg-white p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
               {tab.articles.length === 0 ? (
@@ -116,7 +138,7 @@ export default function ArticleTabs({ articles, popularArticles = [] }: ArticleT
                           {article.tags && article.tags.length > 0 && (
                             <div className="flex space-x-1">
                               {article.tags.slice(0, 2).map((tag) => (
-                                <span 
+                                <span
                                   key={tag}
                                   className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs"
                                 >
@@ -128,6 +150,24 @@ export default function ArticleTabs({ articles, popularArticles = [] }: ArticleT
                               )}
                             </div>
                           )}
+                        </div>
+                        {/* 统计行：仅图标，悬浮显示文字 */}
+                        <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                          <div className="group relative inline-flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{stats[article.slug]?.pv ?? 0}</span>
+                            <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">阅读数</span>
+                          </div>
+                          <div className="group relative inline-flex items-center gap-1">
+                            <Heart className="w-3.5 h-3.5" />
+                            <span>{stats[article.slug]?.likes ?? 0}</span>
+                            <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">点赞数</span>
+                          </div>
+                          <div className="group relative inline-flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>{stats[article.slug]?.comments ?? 0}</span>
+                            <span className="absolute left-5 -top-6 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none">评论数</span>
+                          </div>
                         </div>
                         {article.summary && (
                           <p className="mt-2 text-gray-600 text-sm line-clamp-2">{article.summary}</p>

@@ -4,8 +4,9 @@ import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/articles/")) return null;
+  // 所有 Hook 必须无条件调用，避免在不同渲染分支中改变顺序
   const [copiedText, setCopiedText] = useState<string>("");
+  if (pathname?.startsWith("/articles/")) return null;
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -35,7 +36,7 @@ export default function Footer() {
       setTimeout(() => {
         setCopiedText("");
       }, 2000);
-    } catch (e) {
+    } catch {
       alert('复制失败，请手动复制: ' + text);
     }
   };
@@ -73,7 +74,7 @@ export default function Footer() {
           </span>
         </div>
         <div className="copyright">
-          © {new Date().getFullYear()} Peng's Blog
+          © {new Date().getFullYear()} Peng&apos;s Blog
         </div>
       </div>
     </footer>

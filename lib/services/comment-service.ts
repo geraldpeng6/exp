@@ -29,7 +29,7 @@ export interface CreateCommentData {
   browserFingerprint?: string;
 }
 
-export interface CommentWithUser extends Comment {}
+export type CommentWithUser = Comment;
 
 /**
  * 创建新评论（快照昵称与头像链接）
@@ -184,6 +184,51 @@ export async function getCommentsByArticle(
     limit,
     totalPages
   };
+}
+
+/**
+ * 获取全部评论列表（返回快照字段）
+ */
+export async function getAllComments(
+  options: { page?: number; limit?: number; orderBy?: 'newest' | 'oldest' } = {}
+): Promise<{
+  comments: CommentWithUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}> {
+  const { page = 1, limit = 50, orderBy = 'newest' } = options;
+  const offset = (page - 1) * limit;
+  const orderClause = orderBy === 'newest' ? 'DESC' : 'ASC';
+
+  const db = getDatabase();
+
+  const totalResult = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM comments
+  `).get() as { count: number };
+
+  const total = totalResult.count;
+  const totalPages = Math.ceil(total / limit);
+
+  const comments = db.prepare(`
+    SELECT
+      c.id,
+      c.article_id as articleId,
+      c.user_id as userId,
+      COALESCE(c.nickname, '匿名用户') as nickname,
+      COALESCE(c.avatar_url, '') as avatarUrl,
+      c.content,
+      c.browser_fingerprint as browserFingerprint,
+      c.created_at as createdAt,
+      c.updated_at as updatedAt
+    FROM comments c
+    ORDER BY c.created_at ${orderClause}
+    LIMIT ? OFFSET ?
+  `).all(limit, offset) as CommentWithUser[];
+
+  return { comments, total, page, limit, totalPages };
 }
 
 /**
@@ -359,7 +404,7 @@ export async function canDeleteComment(
     const timeLeft = twoMinutes - timeDiff;
     return { canDelete: true, timeLeft };
 
-  } catch (error) {
+  } catch {
     return { canDelete: false, reason: '检查权限时出错' };
   }
 }

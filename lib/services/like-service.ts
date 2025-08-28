@@ -204,7 +204,8 @@ export async function getLikesByArticle(
     LIMIT ? OFFSET ?
   `;
   
-  const likes = db.prepare(query).all(articleId, limit, offset) as any[];
+  type LikeWithUser = Like & { nickname?: string; avatarSeed?: string };
+  const likes = db.prepare(query).all(articleId, limit, offset) as LikeWithUser[];
   
   return {
     likes,
@@ -289,7 +290,7 @@ export async function getPopularArticles(
   const db = getDatabase();
   
   let timeFilter = '';
-  const params: any[] = [];
+  const params: Array<string | number> = [];
   
   if (timeRange !== 'all') {
     const now = Math.floor(Date.now() / 1000);
@@ -348,8 +349,8 @@ export async function getHotArticlesByEngagement(
 
   let timeFilter = '';
   let timeFilterComments = '';
-  const params: any[] = [];
-  const params2: any[] = [];
+  const params: Array<string | number> = [];
+  const params2: Array<string | number> = [];
 
   if (timeRange !== 'all') {
     const now = Math.floor(Date.now() / 1000);
