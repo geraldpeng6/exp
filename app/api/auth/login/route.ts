@@ -20,6 +20,25 @@ export async function POST(req: NextRequest) {
   const username = process.env.ADMIN_USERNAME || '';
   const password = process.env.ADMIN_PASSWORD || '';
 
+  // 调试（不打印明文）：输出长度与 SHA256 哈希，便于排查不一致问题
+  try {
+    const sha256Hex = async (s: string) => {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+    console.log(JSON.stringify({
+      msg: 'auth_login_debug',
+      uLen: username.length,
+      pLen: password.length,
+      uHash: await sha256Hex(username),
+      pHash: await sha256Hex(password),
+      buLen: (body.username || '').length,
+      bpLen: (body.password || '').length,
+      buHash: await sha256Hex(body.username || ''),
+      bpHash: await sha256Hex(body.password || ''),
+    }));
+  } catch {}
+
   // 强制要求设置强口令后才允许登录
   if (!isStrong(username) || !isStrong(password)) {
     return NextResponse.json({ error: '管理员账号未正确设置。请配置 ADMIN_USERNAME/ADMIN_PASSWORD 为高强度值（≥12位，含大小写/数字/符号至少3类）。' }, { status: 503 });
