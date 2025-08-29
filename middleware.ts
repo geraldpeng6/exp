@@ -4,8 +4,8 @@ import { getRequestId } from '@/lib/telemetry/logger';
 
 function isLan(ip: string | null | undefined) {
   if (!ip) return false;
-  // IPv4: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8
-  return /^10\./.test(ip) || /^192\.168\./.test(ip) || /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip) || /^127\./.test(ip) || ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd');
+  // IPv4: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 100.64.0.0/10 (Tailscale CGNAT)
+  return /^10\./.test(ip) || /^192\.168\./.test(ip) || /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip) || /^127\./.test(ip) || /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(ip) || ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd');
 }
 
 export async function middleware(req: NextRequest) {
@@ -33,10 +33,7 @@ export async function middleware(req: NextRequest) {
       const token = req.cookies.get('session')?.value || '';
       const payload = token ? await verifySession(token) : null;
       if (!payload || payload.role !== 'admin') {
-        const url = req.nextUrl.clone();
-        url.pathname = '/console/login';
-        url.searchParams.set('from', pathname);
-        const r = NextResponse.redirect(url);
+        const r = NextResponse.redirect(`/console/login?from=${encodeURIComponent(pathname)}`);
         r.headers.set('x-request-id', reqId);
         return r;
       }
