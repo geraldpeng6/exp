@@ -10,7 +10,9 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "next lint",
     "init-db": "node scripts/init-db.js",
-    "db-stats": "node -e \"const { getDatabaseStats } = require('./lib/database/connection'); console.log(JSON.stringify(getDatabaseStats(), null, 2));\""
+    "db-stats": "node -e \"const { getDatabaseStats } = require('./lib/database/connection'); console.log(JSON.stringify(getDatabaseStats(), null, 2));\"",
+    "postinstall": "pnpm rebuild better-sqlite3 || true",
+    "rebuild-native": "pnpm rebuild better-sqlite3"
   },
   "dependencies": {
     "@bytemd/plugin-gfm": "latest",
