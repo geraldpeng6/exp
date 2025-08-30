@@ -16,8 +16,7 @@ async function validateAdmin(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
-  const { isLan } = await import('@/lib/security/ip');
-  if (!isLan(ip)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  // 移除内网/IP 限制，仅保留管理员校验
   if (!(await validateAdmin(request))) return NextResponse.json({ error: '需要管理员权限' }, { status: 401 });
 
   const rl = checkRateLimit(`${ip}:admin-comments`, RATE_LIMIT_CONFIGS.API_GENERAL);

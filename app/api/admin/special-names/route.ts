@@ -29,10 +29,8 @@ const specialNameSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    // 局域网限制
+    // 移除内网/IP 限制，仅保留管理员权限
     const ip = getClientIp(request);
-    const { isLan } = await import('@/lib/security/ip');
-    if (!isLan(ip)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // 验证管理员权限
     if (!(await validateAdmin(request))) {
@@ -85,10 +83,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // 局域网限制
+    // 移除内网/IP 限制，仅保留管理员权限
     const ip = getClientIp(request);
-    const { isLan } = await import('@/lib/security/ip');
-    if (!isLan(ip)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // 验证管理员权限
     if (!(await validateAdmin(request))) {
@@ -143,10 +139,8 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    // 局域网限制
+    // 移除内网/IP 限制，仅保留管理员权限
     const ip = getClientIp(request);
-    const { isLan } = await import('@/lib/security/ip');
-    if (!isLan(ip)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // 验证管理员权限
     if (!(await validateAdmin(request))) {
