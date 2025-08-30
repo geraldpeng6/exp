@@ -2,7 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/security/auth';
 import { getRequestId } from '@/lib/telemetry/logger';
 
-const ALLOWED_IPS = new Set<string>(['100.126.240.87', '100.119.115.128']);
+// 允许通过环境变量配置控制台白名单 IP（逗号分隔）
+// 构建时注入（Next 会内联 env）；更新需重新构建
+function readEnv(name: string): string {
+  const env = (typeof process !== 'undefined' ? (process as unknown as { env?: Record<string, string | undefined> }).env : undefined);
+  return env?.[name] ?? '';
+}
+const DEFAULT_ALLOWED_IPS = ['100.126.240.87', '100.119.115.128'];
+const ENV_ALLOWED_IPS = (readEnv('CONSOLE_ALLOW_IPS') || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const ALLOWED_IPS = new Set<string>([...DEFAULT_ALLOWED_IPS, ...ENV_ALLOWED_IPS]);
 
 function isLan(ip: string | null | undefined) {
   if (!ip) return false;
