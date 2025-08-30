@@ -16,6 +16,13 @@ function normalize(s: string): string {
   return (s ?? '').replace(/\r/g, '').trim();
 }
 
+// 运行时读取环境变量，避免构建期内联（使用计算属性访问）
+function readEnv(name: string): string {
+  const env = (globalThis as any)?.process?.env as Record<string, string | undefined> | undefined;
+  return env?.[name] ?? '';
+}
+
+
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rl = checkRateLimit(`${ip}:login`, RATE_LIMIT_CONFIGS.STRICT);
@@ -28,16 +35,16 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => ({}))) as Partial<{ username: string; password: string }>;
 
-  // 从环境读取并归一化
-  const rawUsername = process.env.ADMIN_USERNAME || '';
-  const rawPassword = process.env.ADMIN_PASSWORD || '';
+  // 从环境读取并归一化（优先使用 RUNTIME 前缀，回退至原键名/兼容键名）
+  const rawUsername = readEnv('ADMIN_USERNAME_RUNTIME') || readEnv('ADMIN_USERNAME') || readEnv('CONSOLE_USERNAME') || '';
+  const rawPassword = readEnv('ADMIN_PASSWORD_RUNTIME') || readEnv('ADMIN_PASSWORD') || readEnv('CONSOLE_PASSWORD') || '';
   const username = normalize(rawUsername);
   const password = normalize(rawPassword);
 
   // 要求强口令
   if (!isStrong(username) || !isStrong(password)) {
     return NextResponse.json(
-      { error: '管理员账号未正确设置。请配置 ADMIN_USERNAME/ADMIN_PASSWORD 为高强度值（≥12位，含大小写/数字/符号至少3类）。' },
+      { error: '管理员账号未正确设置。请配置 ADMIN_USERNAME_RUNTIME/ADMIN_PASSWORD_RUNTIME（或 ADMIN_USERNAME/ADMIN_PASSWORD）为高强度值（≥12位，含大小写/数字/符号至少3类）。' },
       { status: 503 }
     );
   }
