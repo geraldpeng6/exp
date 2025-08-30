@@ -6,3 +6,12 @@ out
 .vercel
 
 .env*.local
+
+
+# SQLite databases (ignore local data)
+*.db
+*.db-shm
+*.db-wal
+# In case of any namespaced db files under data/
+data/*.db
+data/*.db-*

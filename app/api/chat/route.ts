@@ -5,6 +5,11 @@ import { checkRateLimit, RATE_LIMIT_CONFIGS, getClientIp } from '@/lib/security/
 import { checkAndConsumeDailyAiQuota } from '@/lib/security/daily-ai-limit';
 import { getArticle } from '@/lib/articles';
 
+// AI 提供商配置（仅服务端环境变量）
+// 在 .env.local 或部署平台环境变量中设置：
+//   OPENAI_API_KEY=sk-xxxx                // 必填：你的 API Key
+//   OPENAI_BASE_URL=https://api.openai.com/v1  // 可选：OpenAI 兼容端点
+//   OPENAI_MODEL=gpt-4o-mini              // 可选：模型名称
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';

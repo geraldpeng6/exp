@@ -1,9 +1,15 @@
 import { getDatabase } from '@/lib/database/connection';
 
+// AI 提供商配置（仅服务端读取环境变量，不会被客户端打包）
+// 建议在项目根目录创建 .env.local 并设置以下变量，或在部署平台的环境变量面板中配置：
+//   OPENAI_API_KEY=sk-xxxx                // 必填：你的 API Key（切勿放入客户端代码）
+//   OPENAI_BASE_URL=https://api.openai.com/v1  // 可选：OpenAI 兼容端点（可换为自建代理地址）
+//   OPENAI_MODEL=gpt-4o-mini              // 可选：模型名称
+// 说明：本文件作为服务端代码运行，运行时通过 process.env 读取上述变量。
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-const DEFAULT_SYSTEM_PROMPT = '你是一个优秀的技术写作助手。请为输入的文章内容生成一段 2-4 句的中文摘要，突出关键要点，避免冗余。';
+const DEFAULT_SYSTEM_PROMPT = '你是一个优秀的技术写作助手。请为输入的文章内容生成中文摘要，突出关键要点，避免冗余。';
 
 // 简单的并发去重：同一 slug 的请求合并
 const inFlight = new Map<string, Promise<string>>();

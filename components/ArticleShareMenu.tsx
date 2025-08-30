@@ -116,23 +116,21 @@ ${content}`;
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-            <div className="px-1 py-1">
+          <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none p-1">
+            <div className="flex flex-col gap-1">
               <Menu.Item>
                 {({ active }) => (
                   <button
                     onClick={handleCopyText}
-                    className={`${
-                      active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group relative inline-flex items-center justify-center w-8 h-8 rounded-md text-sm text-gray-900 dark:text-gray-100`}
+                    className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100 transition-colors`}
                     aria-label="复制文本"
                   >
                     {copiedText ? (
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <Copy className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     )}
-                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">复制文本</span>
+                    <span>复制文本</span>
                   </button>
                 )}
               </Menu.Item>
@@ -141,34 +139,28 @@ ${content}`;
                 {({ active }) => (
                   <button
                     onClick={handleDownloadMarkdown}
-                    className={`${
-                      active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group relative inline-flex items-center justify-center w-8 h-8 rounded-md text-sm text-gray-900 dark:text-gray-100`}
+                    className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100 transition-colors`}
                     aria-label="下载 Markdown"
                   >
-                    <Download className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">下载 Markdown</span>
+                    <Download className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <span>下载 Markdown</span>
                   </button>
                 )}
               </Menu.Item>
-            </div>
 
-            <div className="px-1 py-1">
               <Menu.Item>
                 {({ active }) => (
                   <button
                     onClick={handleCopyLink}
-                    className={`${
-                      active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    } group relative inline-flex items-center justify-center rounded-md px-1.5 py-1 text-sm text-gray-900 dark:text-gray-100`}
+                    className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900 dark:text-gray-100 transition-colors`}
                     aria-label="复制页面链接"
                   >
                     {copiedLink ? (
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <Copy className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     )}
-                    <span className="absolute top-full mt-0.5 rounded bg-gray-100/90 dark:bg-gray-700/90 px-1.5 py-[1px] text-[10px] text-gray-700 dark:text-gray-200 opacity-0 group-hover:opacity-100 pointer-events-none">复制页面链接</span>
+                    <span>复制页面链接</span>
                   </button>
                 )}
               </Menu.Item>
