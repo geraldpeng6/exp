@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const insertView = db.prepare(`
-    INSERT INTO article_views (slug, day_start_utc, views) VALUES (?, ?, 1)
-    ON CONFLICT(slug, day_start_utc) DO UPDATE SET views = article_views.views + 1
+    INSERT INTO article_views (slug, date, views) VALUES (?, ?, 1)
+    ON CONFLICT(slug, date) DO UPDATE SET views = article_views.views + 1
   `);
 
   let inserted = 0;
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
         if (e.type === 'pv' && e.path && e.path.startsWith('/articles/')) {
           const slug = e.path.split('/articles/')[1];
           if (slug) {
-            const dayStartUtc = e.ts - (e.ts % 86400);
-            insertView.run(slug, dayStartUtc);
+            const dayStr = new Date(e.ts * 1000).toISOString().slice(0, 10);
+            insertView.run(slug, dayStr);
           }
         }
       } catch (err: unknown) {
