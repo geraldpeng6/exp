@@ -18,7 +18,8 @@ function normalize(s: string): string {
 
 // 运行时读取环境变量，避免构建期内联（使用计算属性访问）
 function readEnv(name: string): string {
-  const env = (globalThis as any)?.process?.env as Record<string, string | undefined> | undefined;
+  // 避免 any：通过 typeof process 保护，并显式标注类型
+  const env = (typeof process !== 'undefined' ? process.env : undefined) as Record<string, string | undefined> | undefined;
   return env?.[name] ?? '';
 }
 
